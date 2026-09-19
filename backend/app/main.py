@@ -4,9 +4,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 
-from backend.app.agents.support import run_support_agent
-from backend.app.database import engine, init_db
-from backend.app.models import PromptRequest, SupportTicket
+from app.agents.support import run_support_agent
+from app.database import engine, init_db
+from app.models import PromptRequest, SupportTicket
 
 
 @asynccontextmanager

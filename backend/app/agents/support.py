@@ -2,9 +2,9 @@ from google import genai
 from google.genai import types
 from sqlmodel import Session, select
 
-from backend.app.config import settings
-from backend.app.database import engine
-from backend.app.models import SupportTicket
+from app.config import settings
+from app.database import engine
+from app.models import SupportTicket
 
 client = genai.Client(api_key=settings.gemini_api_key)
 
