@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from google.genai.errors import APIError
 from sqlmodel import Session, select
 
 from app.agents.support import run_support_agent
@@ -56,9 +57,12 @@ app.add_middleware(
 
 @app.post("/api/agent/run")
 def run_agent(request: PromptRequest):
-    agent_output = run_support_agent(request.prompt)
-    return {
-        "status": "success",
-        "user_prompt": request.prompt,
-        "agent_response": agent_output,
-    }
+    try:
+        agent_output = run_support_agent(request.prompt)
+        return {
+            "status": "success",
+            "user_prompt": request.prompt,
+            "agent_response": agent_output,
+        }
+    except APIError as e:
+        raise HTTPException(status_code=500, detail=f"Gemini Error: {e}")
