@@ -1,4 +1,4 @@
-.PHONY: install run dev test vet lint clean
+.PHONY: install migrate seed run dev test vet lint clean
 
 TIMESTAMP = $(shell date "+%H:%M:%S") 
 
@@ -12,13 +12,37 @@ install:
 	@cd backend && \
 	if [ ! -d "venv" ]; then \
 		python3 -m venv venv; \
-		echo "[ $(TIMESTAMP)] Virtual environment created. ✅"; \
+		echo "[ $(TIMESTAMP)] Virtual environment created. ⚙️"; \
 	else \
 		echo "[ $(TIMESTAMP)] Virtual environment already exists, skipping creation. ⏩"; \
 	fi && \
 	echo "[ $(TIMESTAMP)] Installing backend dependencies..." && \
 	./venv/bin/pip install -q -r requirements.txt
 	@echo "[ $(TIMESTAMP)] Backend dependencies installed. ✅"
+
+# Migrating
+migrate-create:
+	@if [ -z "$(name)"]; then \
+		printf "[ $(TIMESTAMP)] \033[0;31mError: Migration name is required. Use: make migrate-create name=\"your_description\"\033[0m\n"; \
+		exit 1; \
+	fi
+	@cd backend && ./venv/bin/alembic revision --autogenerate -m "$(name)"
+	@echo "[ $(TIMESTAMP)] Migration created. 📦"
+
+migrate-up:
+	@cd backend && ./venv/bin/alembic upgrade head
+	@echo "[ $(TIMESTAMP)] Database updated. 📝"
+
+migrate-down:
+	@cd backend && ./venv/bin/alembic downgrade -1
+
+migrate-reset:
+	@cd backend && ./venv/bin/alembic downgrade base
+
+# Seeding
+seed:
+	@PYTHONPATH=backend ./backend/venv/bin/python backend/app/db/seed.py
+	@echo "[ $(TIMESTAMP)] Database seeded successfully. 🌱"
 
 # Running
 run-backend:
