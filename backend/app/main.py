@@ -30,10 +30,6 @@ app.add_middleware(
 def run_agent(request: PromptRequest):
     try:
         agent_output = run_support_agent(request.prompt)
-        return {
-            "status": "success",
-            "user_prompt": request.prompt,
-            "agent_response": agent_output,
-        }
+        return agent_output
     except APIError as e:
         raise HTTPException(status_code=500, detail=f"Gemini Error: {e}")
