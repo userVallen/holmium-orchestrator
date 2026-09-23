@@ -1,3 +1,4 @@
+aiosqlite==0.22.1
 alembic==1.20.0
 annotated-doc==0.0.5
 annotated-types==0.8.0
@@ -31,6 +32,7 @@ pydantic-settings==2.15.0
 pydantic_core==2.46.5
 Pygments==2.21.0
 pytest==9.1.1
+pytest-asyncio==1.4.0
 python-dotenv==1.2.3
 requests==2.34.2
 ruff==0.16.8

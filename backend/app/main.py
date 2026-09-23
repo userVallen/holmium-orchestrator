@@ -3,45 +3,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from google.genai.errors import APIError
-from sqlmodel import Session, select
 
 from app.agents.support import run_support_agent
-from app.database import engine, init_db
-from app.models import PromptRequest, SupportTicket
+from app.database import engine
+from app.models import PromptRequest
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
-    with Session(engine) as session:
-        if not session.exec(select(SupportTicket)).first():
-            session.add_all(
-                [
-                    SupportTicket(
-                        category="billing",
-                        issue_description="User reporting double charges",
-                        status="Open",
-                    ),
-                    SupportTicket(
-                        category="billing",
-                        issue_description="Refund request for failed subscription",
-                        status="Open",
-                    ),
-                    SupportTicket(
-                        category="technical",
-                        issue_description="App crashing on login for iOS users",
-                        status="Open",
-                    ),
-                    SupportTicket(
-                        category="shipping",
-                        issue_description="Delayed tracking number update",
-                        status="Open",
-                    ),
-                ]
-            )
-            session.commit()
     yield
-    engine.dispose()
+    await engine.dispose()
 
 
 app = FastAPI(title="Holmium Orchestrator API", version="1.0.0", lifespan=lifespan)

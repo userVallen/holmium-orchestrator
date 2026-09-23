@@ -1,26 +1,17 @@
-import os
 from logging.config import fileConfig
 
 from alembic import context
+from app.config import settings
 from app.db.base import Base
 from app.db.models import SupportTicket  # noqa
-from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
-
-load_dotenv()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
 # Dynamically override sqlalchemy.url from the environment variable
-database_url = os.getenv("DATABASE_URL_SYNC")
-if not database_url:
-    # Fallback or helper if you store the async one and need to switch driver for alembic
-    async_url = os.getenv("DATABASE_URL", "")
-    database_url = async_url.replace("postgresql+asyncpg://", "postgresql+psycopg2://")
-
-config.set_main_option("sqlalchemy.url", database_url)
+config.set_main_option("sqlalchemy.url", settings.database_url_sync)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
