@@ -1,4 +1,3 @@
-import enum
 import uuid
 from datetime import datetime, timezone
 
@@ -6,13 +5,7 @@ from sqlalchemy import Column, DateTime, Enum, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.db.base import Base
-
-
-class TicketStatus(str, enum.Enum):
-    OPEN = "open"
-    IN_PROGRESS = "in_progress"
-    RESOLVED = "resolved"
-    CLOSED = "closed"
+from app.models.enums import TicketCategory, TicketStatus
 
 
 class SupportTicket(Base):
@@ -23,6 +16,11 @@ class SupportTicket(Base):
     subject = Column(String, nullable=False)
     description = Column(Text, nullable=False)
     status = Column(Enum(TicketStatus), default=TicketStatus.OPEN, nullable=False)
+    category = Column(
+        String,
+        default=TicketCategory.GENERAL.value,
+        nullable=False,
+    )
     created_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

@@ -6,7 +6,7 @@ from google.genai.errors import APIError
 
 from app.agents.support import run_support_agent
 from app.database import engine
-from app.models import PromptRequest
+from app.dtos import PromptRequest
 
 
 @asynccontextmanager
