@@ -21,12 +21,14 @@ async def seed_db():
             user_email="user1@example.com",
             subject="Login issue",
             description="I cannot log into my account using Google SSO.",
+            category="account",
             status=TicketStatus.OPEN,
         )
         ticket2 = SupportTicket(
             user_email="user2@example.com",
             subject="Billing question",
             description="Where can I download my latest invoice?",
+            category="billing",
             status=TicketStatus.IN_PROGRESS,
         )
         session.add_all([ticket1, ticket2])

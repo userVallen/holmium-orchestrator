@@ -15,7 +15,9 @@ class SupportTicket(Base):
     user_email = Column(String, nullable=False)
     subject = Column(String, nullable=False)
     description = Column(Text, nullable=False)
-    status = Column(Enum(TicketStatus), default=TicketStatus.OPEN, nullable=False)
+    status = Column(
+        Enum(TicketStatus, create_type=False), default=TicketStatus.OPEN, nullable=False
+    )
     category = Column(
         String,
         default=TicketCategory.GENERAL.value,

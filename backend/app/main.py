@@ -1,12 +1,16 @@
 from contextlib import asynccontextmanager
+from unicodedata import category
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from google.genai.errors import APIError
+from sqlmodel import Session
 
-from app.agents.support import run_support_agent
+from app.agents.support import run_support_agent, create_support_ticket
 from app.database import engine
-from app.dtos import PromptRequest
+from app.dtos import PromptRequest, TicketResponse
+from app.db.base import get_db
+from app.db.models import SupportTicket
 
 
 @asynccontextmanager
