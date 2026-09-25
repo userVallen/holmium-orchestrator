@@ -13,6 +13,8 @@ SyncSession = sessionmaker(bind=sync_engine)
 
 client = genai.Client(api_key=settings.gemini_api_key)
 
+active_chats: dict[str, client.chats.Chat] = {}
+
 
 class TicketExtractionResult(BaseModel):
     user_email: EmailStr = Field(
@@ -25,7 +27,14 @@ class TicketExtractionResult(BaseModel):
         description="The cleaned-up core issue or request details."
     )
     category: TicketCategory = Field(
-        description="The classified category of the support ticket."
+        description=(
+            "The classified category. Strict rules: "
+            "Use 'account' for any issues involving login, authentication, passwords, SSO, email changes, or user profile settings (even if device-specific). "
+            "Use 'technical' strictly for app crashes, bugs, performance lags, broken UI layouts, or unexpected error screens. "
+            "Use 'billing' for any issues involving subscription plans, payments, refunds, and invoices. "
+            "Use 'feature_request' for new ideas. "
+            "Use 'general' for everything else."
+        )
     )
 
 
@@ -68,21 +77,24 @@ def query_support_ticket(category: str) -> str:
         return f"Found {len(tickets)} open tickets:\n" + "\n".join(formatted_tickets)
 
 
-def run_support_agent(prompt: str) -> str:
-    chat = client.chats.create(
-        model=settings.fast_model,
-        config=types.GenerateContentConfig(
-            temperature=0.2,
-            tools=[create_support_ticket, query_support_ticket],
-            system_instruction=(
-                "You are a helpful customer support AI. Your goal is to help users troubleshoot issues first. "
-                "Do not immediately create a support ticket on the first message. "
-                "Ask clarifying questions and try to help resolve the problem. "
-                "If initial troubleshooting steps don't immediately resolve the issue, or if the user seems stuck, "
-                "proactively suggest: 'Would you like me to file a formal support ticket for this so our team can follow up?'."
-                "Call the create_support_ticket tool only if the user explicitly agrees or asks to file a ticket. "
+def run_support_agent(session_id: str, prompt: str) -> str:
+    """Handles chat persistence and execution for a given session."""
+    if session_id not in active_chats:
+        active_chats[session_id] = client.chats.create(
+            model=settings.fast_model,
+            config=types.GenerateContentConfig(
+                temperature=0.2,
+                tools=[create_support_ticket, query_support_ticket],
+                system_instruction=(
+                    "You are a helpful customer support AI. Your goal is to help users troubleshoot issues first. "
+                    "Do not immediately create a support ticket on the first message. "
+                    "Ask clarifying questions and try to help resolve the problem. "
+                    "If initial troubleshooting steps don't immediately resolve the issue, or if the user seems stuck, "
+                    "proactively suggest: 'Would you like me to file a formal support ticket for this so our team can follow up?'. "
+                    "Call the create_support_ticket tool only if the user explicitly agrees or asks to file a ticket. "
+                ),
             ),
-        ),
-    )
-    response = chat.send_message(prompt)
+        )
+
+    response = active_chats[session_id].send_message(prompt)
     return response.text

@@ -9,18 +9,16 @@ client = TestClient(app)
 
 @patch("app.main.run_support_agent")
 def test_run_agent_success(mock_run):
-    mock_run.return_value = {
-        "status": "success",
-        "user_prompt": "test prompt",
-        "agent_response": "test response",
-    }
+    mock_run.return_value = "test response"
 
-    response = client.post("/api/agent/run", json={"prompt": "test prompt"})
+    response = client.post(
+        "/api/agent/run",
+        json={"session_id": "test session id", "prompt": "test prompt"},
+    )
 
     assert response.status_code == 200
     assert response.json() == {
-        "status": "success",
-        "user_prompt": "test prompt",
+        "session_id": "test session id",
         "agent_response": "test response",
     }
 
@@ -38,6 +36,9 @@ def test_run_agent_gemini_failure(mock_run):
         response_json={"error": {"message": "API rate limit exceeded"}},
     )
 
-    response = client.post("/api/agent/run", json={"prompt": "test prompt"})
+    response = client.post(
+        "/api/agent/run",
+        json={"session_id": "test session id", "prompt": "test prompt"},
+    )
 
     assert response.status_code == 500

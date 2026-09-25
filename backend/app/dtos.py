@@ -15,5 +15,11 @@ class TicketResponse(BaseModel):
         from_attributes = True
 
 
-class PromptRequest(BaseModel):
+class ChatRequest(BaseModel):
+    session_id: str
     prompt: str
+
+
+class ChatResponse(BaseModel):
+    session_id: str
+    agent_response: str
