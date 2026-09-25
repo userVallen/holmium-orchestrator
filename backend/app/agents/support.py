@@ -72,7 +72,16 @@ def run_support_agent(prompt: str) -> str:
     chat = client.chats.create(
         model=settings.fast_model,
         config=types.GenerateContentConfig(
-            temperature=0.2, tools=[create_support_ticket, query_support_ticket]
+            temperature=0.2,
+            tools=[create_support_ticket, query_support_ticket],
+            system_instruction=(
+                "You are a helpful customer support AI. Your goal is to help users troubleshoot issues first. "
+                "Do not immediately create a support ticket on the first message. "
+                "Ask clarifying questions and try to help resolve the problem. "
+                "If initial troubleshooting steps don't immediately resolve the issue, or if the user seems stuck, "
+                "proactively suggest: 'Would you like me to file a formal support ticket for this so our team can follow up?'."
+                "Call the create_support_ticket tool only if the user explicitly agrees or asks to file a ticket. "
+            ),
         ),
     )
     response = chat.send_message(prompt)
