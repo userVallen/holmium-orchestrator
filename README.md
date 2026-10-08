@@ -138,9 +138,9 @@ You can run the backend and frontend development servers in separate terminal wi
   make dev-backend
   ```
 - Run Frontend Development Server:
-  `bash
-    make dev-frontend
-    `
+  ```bash
+  make dev-frontend
+  ```
   Once both servers are running, open http://localhost:3000 in your browser to interact with the support agent.
 
 ## Database
