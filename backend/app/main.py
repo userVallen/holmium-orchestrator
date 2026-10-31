@@ -1,12 +1,19 @@
 from contextlib import asynccontextmanager
+from uuid import UUID
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from google.genai.errors import APIError
 
-from app.agents.support import run_support_agent
+from app.agents.support import (
+    SyncSession,
+    fetch_chats,
+    fetch_messages,
+    run_support_agent,
+)
 from app.database import engine
-from app.dtos import ChatRequest, ChatResponse
+from app.db.models import Chat as ChatModel
+from app.dtos import Chat, ChatRequest, ChatResponse, Message
 
 
 @asynccontextmanager
@@ -24,6 +31,29 @@ app.add_middleware(
     allow_headers=["*"],
     allow_methods=["*"],
 )
+
+
+@app.get("/api/chats", response_model=list[Chat])
+def get_user_chats(user_email: str):
+    try:
+        chats = fetch_chats(user_email)
+        return chats
+    except APIError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/chats/{session_id}/messages", response_model=list[Message])
+def get_chat_messages(session_id: UUID):
+    with SyncSession() as session:
+        chat_exists = session.get(ChatModel, session_id)
+        if not chat_exists:
+            raise HTTPException(status_code=404, detail="Chat session not found")
+
+    try:
+        messages = fetch_messages(session_id)
+        return messages
+    except APIError as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/agent/run", response_model=ChatResponse)

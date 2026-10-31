@@ -1,4 +1,7 @@
-from pydantic import BaseModel
+from datetime import datetime
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict
 
 from app.models.enums import TicketCategory, TicketStatus
 
@@ -11,8 +14,7 @@ class TicketResponse(BaseModel):
     status: TicketStatus
     category: TicketCategory
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ChatRequest(BaseModel):
@@ -23,3 +25,22 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     session_id: str
     agent_response: str
+
+
+class Chat(BaseModel):
+    id: UUID
+    user_email: str
+    title: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class Message(BaseModel):
+    id: UUID
+    session_id: UUID
+    role: str
+    content: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

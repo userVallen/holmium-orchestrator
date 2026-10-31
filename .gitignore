@@ -6,6 +6,7 @@ venv/
 .env
 .pytest_cache/
 .DS_Store
+test.db
 
 # --- Node.js (Frontend) ---
 **/node_modules/

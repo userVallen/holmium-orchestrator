@@ -29,6 +29,37 @@ def test_run_agent_missing_prompt():
     assert response.status_code == 422
 
 
+def test_get_user_chats_success(seeded_chat):
+    response = client.get(
+        "/api/chats", params={"user_email": seeded_chat["user_email"]}
+    )
+
+    assert response.status_code == 200
+
+
+def test_get_user_chats_missing_parameter():
+    response = client.get("/api/chats")
+
+    assert response.status_code == 422
+
+
+def test_get_chat_messages_success(seeded_chat):
+    session_id = seeded_chat["session_id"]
+    response = client.get(f"/api/chats/{session_id}/messages")
+
+    assert response.status_code == 200
+    ## TODO: Somehow got 404 instead.
+    assert len(response.json()) > 0
+    assert isinstance(response.json(), list)
+
+
+def test_get_chat_messages_invalid_session_id():
+    session_id = "00000000-0000-0000-0000-000000000000"
+    response = client.get(f"/api/chats/{session_id}/messages")
+
+    assert response.status_code == 404
+
+
 @patch("app.main.run_support_agent")
 def test_run_agent_gemini_failure(mock_run):
     mock_run.side_effect = APIError(

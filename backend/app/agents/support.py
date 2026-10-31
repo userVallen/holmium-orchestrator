@@ -5,7 +5,11 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
 from app.config import settings
+from app.db.models import Chat as ChatModel
+from app.db.models import Message as MessageModel
 from app.db.models import SupportTicket
+from app.dtos import Chat as ChatDto
+from app.dtos import Message as MessageDto
 from app.models.enums import TicketCategory
 
 sync_engine = create_engine(settings.database_url_sync)
@@ -36,6 +40,28 @@ class TicketExtractionResult(BaseModel):
             "Use 'general' for everything else."
         )
     )
+
+
+def fetch_chats(user_email: str) -> list[ChatDto]:
+    with SyncSession() as session:
+        statement = (
+            select(ChatModel)
+            .where(ChatModel.user_email == user_email)
+            .order_by(ChatModel.created_at.desc())
+        )
+        chats = session.scalars(statement).all()
+        return [ChatDto.model_validate(chat) for chat in chats]
+
+
+def fetch_messages(session_id: str) -> list[MessageDto]:
+    with SyncSession() as session:
+        statement = (
+            select(MessageModel)
+            .where(MessageModel.session_id == session_id)
+            .order_by(MessageModel.created_at.asc())
+        )
+        chat_messages = session.scalars(statement).all()
+        return [MessageDto.model_validate(message) for message in chat_messages]
 
 
 def create_support_ticket(ticket: TicketExtractionResult) -> str:
