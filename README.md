@@ -149,7 +149,7 @@ All tickets are stored in `public.support_tickets` table in Supabase with the fo
 | Column | Type | Description |
 | --- | --- | --- |
 | `id` | `uuid` | Unique ticket identifier |
-| `user_email` | `varchar` | Ticket submitter's email |
+| `user_email` | `text` | Ticket submitter's email |
 | `subject` | `varchar` | Short ticket title |
 | `description` | `text` | Ticket summary |
 | `status` | `enum` | Ticket status (`OPEN`, `IN_PROGRESS`, `RESOLVED`, or `CLOSED`) |

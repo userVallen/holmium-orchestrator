@@ -1,4 +1,5 @@
 import os
+import uuid
 
 import pytest
 from dotenv import load_dotenv
@@ -9,7 +10,7 @@ load_dotenv(env_test_path, override=True)
 
 import pytest_asyncio
 from app.db import base as db_base
-from app.db.models import Chat, Message
+from app.db.models import Chat, Message, User
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -77,8 +78,12 @@ def clean_test_db_file():
 @pytest.fixture
 def seeded_chat():
     with db_base.sync_session() as session:
+        dummy_user_id = uuid.uuid4()
+        user = User(id=dummy_user_id, name="Test user", email="test@example.com")
+        session.add(user)
+
         chat = Chat(
-            user_email="test@example.com",
+            user_id=user.id,
             title="Test chat",
         )
         session.add(chat)
@@ -91,4 +96,4 @@ def seeded_chat():
         session.add_all([user_prompt, agent_response])
         session.commit()
 
-        return {"session_id": chat.id, "user_email": chat.user_email}
+        return {"session_id": chat.id, "user_id": chat.user_id}

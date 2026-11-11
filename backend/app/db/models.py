@@ -37,14 +37,35 @@ class SupportTicket(Base):
     )
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        index=True,
+    )
+    name: Mapped[str | None] = mapped_column(String, nullable=True)
+    email: Mapped[str | None] = mapped_column(String, unique=True, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    chats: Mapped[list["Chat"]] = relationship("Chat", back_populates="user")
+
+
 class Chat(Base):
     __tablename__ = "chat_sessions"
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True
     )
-    user_email: Mapped[str] = mapped_column(String, index=True, nullable=False)
-    title: Mapped[str] = mapped_column(String, nullable=True)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    title: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -52,6 +73,7 @@ class Chat(Base):
     messages: Mapped[list["Message"]] = relationship(
         "Message", back_populates="chat", cascade="all, delete-orphan"
     )
+    user: Mapped[User | None] = relationship("User", back_populates="chats")
 
 
 class Message(Base):
@@ -65,7 +87,7 @@ class Message(Base):
         ForeignKey("chat_sessions.id", ondelete="CASCADE"),
         nullable=False,
     )
-    role: Mapped[str] = mapped_column(String, nullable=False)  # e.g., "user" or "model"
+    role: Mapped[str] = mapped_column(String, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

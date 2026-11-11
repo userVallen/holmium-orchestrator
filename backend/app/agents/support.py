@@ -42,11 +42,11 @@ class TicketExtractionResult(BaseModel):
     )
 
 
-def fetch_chats(user_email: str) -> list[ChatDto]:
+def fetch_chats(user_id: str) -> list[ChatDto]:
     with SyncSession() as session:
         statement = (
             select(ChatModel)
-            .where(ChatModel.user_email == user_email)
+            .where(ChatModel.user_id == user_id)
             .order_by(ChatModel.created_at.desc())
         )
         chats = session.scalars(statement).all()

@@ -34,9 +34,9 @@ app.add_middleware(
 
 
 @app.get("/api/chats", response_model=list[Chat])
-def get_user_chats(user_email: str):
+def get_user_chats(user_id: UUID):
     try:
-        chats = fetch_chats(user_email)
+        chats = fetch_chats(user_id)
         return chats
     except APIError as e:
         raise HTTPException(status_code=500, detail=str(e))

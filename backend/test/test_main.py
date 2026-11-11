@@ -1,3 +1,4 @@
+import uuid
 from unittest.mock import patch
 
 from app.main import app
@@ -30,9 +31,7 @@ def test_run_agent_missing_prompt():
 
 
 def test_get_user_chats_success(seeded_chat):
-    response = client.get(
-        "/api/chats", params={"user_email": seeded_chat["user_email"]}
-    )
+    response = client.get("/api/chats", params={"user_id": seeded_chat["user_id"]})
 
     assert response.status_code == 200
 
@@ -48,13 +47,12 @@ def test_get_chat_messages_success(seeded_chat):
     response = client.get(f"/api/chats/{session_id}/messages")
 
     assert response.status_code == 200
-    ## TODO: Somehow got 404 instead.
     assert len(response.json()) > 0
     assert isinstance(response.json(), list)
 
 
 def test_get_chat_messages_invalid_session_id():
-    session_id = "00000000-0000-0000-0000-000000000000"
+    session_id = uuid.NIL
     response = client.get(f"/api/chats/{session_id}/messages")
 
     assert response.status_code == 404
