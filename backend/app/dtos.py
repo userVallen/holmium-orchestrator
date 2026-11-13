@@ -29,7 +29,7 @@ class ChatResponse(BaseModel):
 
 class Chat(BaseModel):
     id: UUID
-    user_id: UUID
+    user_id: UUID | None = None
     title: str
     created_at: datetime
 

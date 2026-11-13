@@ -8,11 +8,13 @@ ENV_FILE = BASE_DIR / ".env"
 
 class Settings(BaseSettings):
     gemini_api_key: str
+    fast_model: str = "gemini-3.5-flash-lite"
+    reasoning_model: str = "gemini-3.6-pro"
+
     database_url: str
     database_url_async: str
     database_url_sync: str
-    fast_model: str = "gemini-3.5-flash-lite"
-    reasoning_model: str = "gemini-3.6-pro"
+    supabase_jwt_secret: str
 
     model_config = SettingsConfigDict(
         env_file=ENV_FILE, env_file_encoding="utf-8", extra="ignore"

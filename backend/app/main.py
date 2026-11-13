@@ -1,19 +1,23 @@
+import uuid
 from contextlib import asynccontextmanager
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from google.genai.errors import APIError
 
 from app.agents.support import (
     SyncSession,
+    create_chat_session,
     fetch_chats,
     fetch_messages,
     run_support_agent,
 )
+from app.api.deps import get_current_user_optional
 from app.database import engine
 from app.db.models import Chat as ChatModel
-from app.dtos import Chat, ChatRequest, ChatResponse, Message
+from app.dtos import Chat as ChatDto
+from app.dtos import ChatRequest, ChatResponse, Message
 
 
 @asynccontextmanager
@@ -33,7 +37,7 @@ app.add_middleware(
 )
 
 
-@app.get("/api/chats", response_model=list[Chat])
+@app.get("/api/chats", response_model=list[ChatDto])
 def get_user_chats(user_id: UUID):
     try:
         chats = fetch_chats(user_id)
@@ -63,3 +67,15 @@ def run_agent(request: ChatRequest):
         return {"session_id": request.session_id, "agent_response": agent_output}
     except APIError as e:
         raise HTTPException(status_code=500, detail=f"Gemini Error: {e}")
+
+
+@app.post("/api/chats", response_model=ChatDto)
+def create_chat(
+    title: str,
+    user_id: uuid.UUID | None = Depends(get_current_user_optional),  # noqa: B008
+):
+    try:
+        new_chat = create_chat_session(title=title, user_id=user_id)
+        return new_chat
+    except APIError as e:
+        raise HTTPException(status_code=500, detail=str(e))

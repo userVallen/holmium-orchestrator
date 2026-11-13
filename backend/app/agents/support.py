@@ -1,3 +1,5 @@
+import uuid
+
 from google import genai
 from google.genai import types
 from pydantic import BaseModel, EmailStr, Field
@@ -40,6 +42,15 @@ class TicketExtractionResult(BaseModel):
             "Use 'general' for everything else."
         )
     )
+
+
+def create_chat_session(title: str, user_id: uuid.UUID | None = None) -> ChatModel:
+    with SyncSession() as session:
+        new_chat = ChatModel(user_id=user_id, title=title)
+        session.add(new_chat)
+        session.commit()
+        session.refresh(new_chat)
+        return new_chat
 
 
 def fetch_chats(user_id: str) -> list[ChatDto]:
